@@ -23,10 +23,10 @@ A first ruleset for the Quickstart
   rule monkey {
     select when echo monkey
     pre {
-      // name = ("Hello " + event:attrs{"name"} || "Hello Monkey").klog("passed in name: ")
-      name = (event:attrs{"name"} => "Hello " + event:attrs{"name"} | "Hello Monkey").klog("passed in name: ")
+      // name = (event:attrs{"name"} || "Monkey").klog("passed in name: ")
+      name = (event:attrs{"name"} => event:attrs{"name"} | "Monkey").klog("passed in name: ")
     }
-    send_directive("say", {"something": name})
+    send_directive("say", {"something": "Hello " + name})
   }
    
 }
