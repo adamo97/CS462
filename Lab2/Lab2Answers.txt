@@ -1,0 +1,11 @@
+Why does this assignment ask you to create a function for messages but an action for sending the SMS message? What's the difference? 
+	- an action should be used for API requests that change state.  POST changes state (when we send a message) and GET does not
+	- using GET in a function ensures that operations in an API that affect external state can be guarded by a rule's conditional
+	and any calls made in the prelude or event expression will not change state
+
+
+Why did we introduce the secrets for the Twilio module by configuring the rule that uses the module, rather than configuring the module directly?
+	- we want to keep the secrets out of the files so that they aren't recorded in version control (keep them secret)
+	- configuring the rule that uses the module, rather than the module directly makes the API reusable. Specifying the secrets in the
+	rule that uses the module allows us to choose what secrets we use for what operations.  This also allows us to limit what operations
+	specific secrets have access to.
