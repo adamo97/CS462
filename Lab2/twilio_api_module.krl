@@ -4,15 +4,20 @@ ruleset twilio_api_module {
         apiKey = ""
         sessionID = ""
       
-      provides sendMessage
+      provides sendMessage, messages
     }
 
     global {
-        base_url = "https://api.twilio.com"
-
         sendMessage = defaction(_to, _from, _body) {
-          http:post(<<#{base_url}/2010-04-01/Accounts/#{sessionID}/Messages>>, form = {"To" : _to, "From" : _from, "Body": _body}) setting(response)
-          return response
+          http:post(<<https://api.twilio.com/2010-04-01/Accounts/#{sessionID}/Messages.json>>, form = {"To":_to, "From":_from, "Body":_body})
+        }
+
+        messages = function(_to, _from, page_size) {
+          q_init = {"To":_to, "From":_from, "PageSize":page_size}
+          query_string = (q_init.filter(function(v,k){not v.isnull()})).klog("message log")
+          
+          response = http:get(<<https://api.twilio.com/2010-04-01/Accounts/#{sessionID}/Messages.json>>, qs = query_string);
+          response{"content"}.decode(){"messages"}
         }
     }
 }

@@ -10,4 +10,12 @@ ruleset twilio_app {
         select when send new_message
             twil:sendMessage(event:attrs{"to"}, event:attrs{"from"}, event:attrs{"message"})
     }
+
+    rule messages {
+        select when get message_log
+        pre {
+            messages = twil:messages(event:attrs{"to"}, event:attrs{"from"}, event:attrs{"page_size"})
+        }
+        send_directive("messages", { "messages": messages})
+    }
 }
