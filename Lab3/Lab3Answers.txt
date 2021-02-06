@@ -1,0 +1,67 @@
+Lab 3 Answers
+1. What parsing method did you choose?
+	I'm not exactly sure what this question is refering to.  I connected my wovyn sensor then via the webhook received the data disected the teperatureF with
+	event:attrs{"genericThing"}{"data"}{"temperature"}[0]{"temperatureF"}
+
+2. Did you accomplish step 5 with an event expression or a rule conditional statement? What are the advantages and disadvantages of the method you used compared with the other?
+	For step 5 I used: select when wovyn heartbeat where event:attrs{"genericThing"}.  this ensures that a genericThing attribute is passed in.
+	One thing to be said about conditional statements is that "Condition expressions may not have anything to do with the events that led to the rule being selected.
+	Using the line I did we guarantee that there is an event attribute with that given name.
+
+3. What was the output of the testing your ruleset before the find_high_temps rule was added? How many directives were returned? How many rules do you think ran?
+	The output was:
+{
+  "eid": "ckkua3rzk0076uovq0lv397l1",
+  "directives": [
+    {
+      "type": "directive",
+      "name": "data",
+      "options": {
+        "temperatureF": 75.31
+      },
+      "meta": {
+        "rid": "wovyn_base",
+        "rule_name": "process_heartbeat",
+        "txnId": "ckkua3rzk0076uovq0lv397l1"
+      }
+    }
+  ]
+}
+
+Only 1 directive was returned.  Only 1 rule was ran because I only had 1.
+
+4. What was the output of the test after the find_high_temps rule was added? How many directives were returned? How many rules do you think ran?
+	If the temp was not a violation then the output is the same as before, but in this case 2 rules were ran since the first rule fired it raised an event calling
+	the second rule.  If there was a violation then a second directive would be sent containing the temperature and the threshold.
+
+5. How do you account for the difference? Diagram the event flow within the pico (i.e. show the event flow from when the pico receives the first event to the directives being created) using a swimlane diagram (Links to an external site.).
+	The difference is when there is only 1 rule, only 1 can be called.  With the second rule it is raised when the first rule fires.  The first rule will always fire since there are no
+	conditional to prevent it from doing so.
+
+	when the third rule is involved, it is only called when there is a violation, same logic for the second directive.
+
+6. Would you say that your find_high_temps rule is an event intermediary? If so, what kind? Justify your answer.
+	I believe it is an event intermediary because it takes the passed along information from the initial event and determines whether there is a violation
+	or not.  This information allows this rule to determine what path to send it along next.  This means it is an Event Stream Splitting intermediary.
+	If there is a violation then it is sent to the twilio api, and if there is not nothing happens, which is it's own path in a sense.
+
+7. How do your logs show that the find_high_temps rule works? Pick out specific lines and explain them.
+
+2021-02-06T22:36:47.661Z - EVENT ckku6oh3g001euovqfq6y284x wovyn:heartbeat {"genericThing":{"typeId":"2.1.2","typeName":"generic.simple.temperature","healthPercent":56.89,"heartbeatSeconds":10,"data":{"temperature":[{"name":"ambient temperature","transducerGUID":"28E3A5680900008D","units":"degrees","temperatureF":75.31,"temperatureC":24.06}]}}}
+22:36:47.661Z [debug] txnQueued EVENT ckku6oh3g001euovqfq6y284x wovyn:heartbeat {"genericThing":{"typeId":"2.1.2","typeName":"generic.simple.temperature","healthPercent":56.89,"heartbeatSeconds":10,"data":{"temperature":[{"name":"ambient temperature","transducerGUID":"28E3A5680900008D","units":"degrees","temperatureF":75.31,"temperatureC":24.06}]}}}
+22:36:47.663Z [debug] txnStart {}
+22:36:47.663Z [debug] event added to schedule {"eci":"ckku6oh3g001euovqfq6y284x","domain":"wovyn","name":"heartbeat","data":{"attrs":{"genericThing":{"typeId":"2.1.2","typeName":"generic.simple.temperature","healthPercent":56.89,"heartbeatSeconds":10,"data":{"temperature":[{"name":"ambient temperature","transducerGUID":"28E3A5680900008D","units":"degrees","temperatureF":75.31,"temperatureC":24.06}]}},"_headers":{"host":"localhost:3000","connection":"keep-alive","content-length":"271","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.152 Safari/537.36","content-type":"application/json; charset=utf-8","accept":"*/*","sec-gpc":"1","origin":"http://localhost:3000","sec-fetch-site":"same-origin","sec-fetch-mode":"cors","sec-fetch-dest":"empty","referer":"http://localhost:3000/","accept-encoding":"gzip, deflate, br","accept-language":"en-US,en;q=0.9"}}},"time":1612651007661}
+22:36:47.668Z [debug] rule selected wovyn_base : process_heartbeat
+22:36:47.669Z [debug] fired 
+22:36:47.669Z [debug] event added to schedule {"eci":"ckku6oh3g001euovqfq6y284x","domain":"wovyn","name":"new_temperature_reading","data":{"attrs":{"temperature":75.31,"timestamp":"2021-02-06T22:36:47.669Z"}},"time":1612651007669}
+22:36:47.671Z [debug] rule selected wovyn_base : find_high_temps
+22:36:47.672Z [klog] find_high_temps 75.31
+22:36:47.672Z [debug] fired 
+22:36:47.672Z [debug] event added to schedule {"eci":"ckku6oh3g001euovqfq6y284x","domain":"wovyn","name":"threshold_violation","data":{"attrs":{"temperature":75.31,"timestamp":"2021-02-06T22:36:47.669Z"}},"time":1612651007672}
+22:36:47.674Z [debug] rule selected wovyn_base : threshold_notification
+22:36:47.674Z [klog] threshold_notification 75.31
+22:36:48.149Z [debug] fired 
+22:36:48.149Z [debug] txnDone {}
+
+On separate lines we see "rule selected wovyn_base : process_heartbeat" then later "rule selected wovyn_base : find_high_temps" and again, later "rule selected wovyn_base : threshold_notification"
+This means the rule is working.

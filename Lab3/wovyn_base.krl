@@ -32,7 +32,7 @@ ruleset wovyn_base {
     rule find_high_temps {
         select when wovyn new_temperature_reading
         pre {
-            temperature = event:attrs{"temperature"}
+            temperature = event:attrs{"temperature"}.klog("find_high_temps")
         }
 
         if temperature > temperature_threshold then
@@ -47,7 +47,7 @@ ruleset wovyn_base {
     rule threshold_notification {
         select when wovyn threshold_violation
         pre {
-            temperature = event:attrs{"temperature"}
+            temperature = event:attrs{"temperature"}.klog("threshold_notification")
         }
         twil:sendMessage(notification_number, twil_number, "Temperature violation: " + temperature + " over threshold of " + temperature_threshold)
     }
