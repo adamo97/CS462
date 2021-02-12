@@ -1,0 +1,21 @@
+Lab 4 Answers
+
+1. Explain how the rule collect_temperatures and the temperatures function work as an event-query API.
+	collect_temperatures is called when the wovyn:new_temperature_reading event gets raised by the wovyn_base ruleset.  The event gets raised, and information is sent
+	via event attributes.  This information is stored and then when the temperatures function is queried the data is returned. The temperatures is only query-able
+	because we listed it in the provides and shares section
+
+2. Explain your strategy for finding temperatures that are in range.
+	I searched the picolabs documentation for list operators.  I didn't find that lists are native (as I have used them in other languages).  From there I
+	searched the array operators and tried to use a map and a filter to get it to do what I wanted.  After I struggled with that I searched for more operators.
+	I found the OPerators sections and the Universal Operators sections and then settled on the Set Operators.  Turns out in this case returning a set is like
+	returning a list.  There is an operator called difference.  This returns all objects that are unique between the sets or arrays.  
+
+	Note: I actually had trouble at first because I had the violations map entries keyed as "violation_temperature" vs "temperature" in the all_temperatures array.
+	This resulted in the comparison never finding anything in common.  I figured it out and made the keys consistent.
+
+3. What happens if provides doesn't list the name of the temperatures function?
+	Without the temperatures function included in the provides pragma, that function would not be accessible by other rulesets when the temperature_store.krl was used as a module
+
+4. What happens if shares doesn't list it?
+	Without the temperatures function included in the shares pragma, that function would not be query-able via the sky/cloud queries
