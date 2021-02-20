@@ -4,11 +4,10 @@ ruleset wovyn_base {
             with
                 apiKey = meta:rulesetConfig{"api_key"}
                 sessionID = meta:rulesetConfig{"session_id"}
+        use module sensor_profile
     }
 
     global {
-        temperature_threshold = 65
-        notification_number = "+16692654358"
         twil_number = "+12244124560"
     }
 
@@ -33,6 +32,7 @@ ruleset wovyn_base {
         select when wovyn new_temperature_reading
         pre {
             temperature = event:attrs{"temperature"}.klog("find_high_temps")
+            temperature_threshold = sensor_profile:profile_data(){"threshold"}.defaultsTo(65)
         }
 
         if temperature > temperature_threshold then
@@ -48,6 +48,8 @@ ruleset wovyn_base {
         select when wovyn threshold_violation
         pre {
             temperature = event:attrs{"temperature"}.klog("threshold_notification")
+            temperature_threshold = sensor_profile:profile_data(){"threshold"}.defaultsTo(65)
+            notification_number = sensor_profile:profile_data(){"phone_number"}.defaultsTo("+16692654358")
         }
         twil:sendMessage(notification_number, twil_number, "Temperature violation: " + temperature + " over threshold of " + temperature_threshold)
     }

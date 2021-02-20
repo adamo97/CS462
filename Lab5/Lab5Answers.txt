@@ -1,0 +1,15 @@
+1. What design decisions did you make in your rulesets that made this assignment easier or harder? Why? 
+	I used a single global function in my sensor_profil.krl that I then shared and provided that allowed it to be queried and used in a module.
+	This is needed to see the data and also to use it in the wovyn_base.
+	I also used an always block to assign values to the ent variables
+
+2. Explain how the sensor_profile ruleset isolates state and processes regarding the sensor profile from other rulesets. 
+	The entity variables are only changed when an event is raised.  These entity variables are then checked to make sure they are not null or an empty string
+	and then just the map that contains the information is shared.
+
+3. How do other rulesets use the sensor_profile to get data?
+	Because the profile_data function is shared and provided it is able to be queried and also able to be used in a module for other rulesets.
+	The wovyn_base uses the profile data function to see what number to text as well as what the threshold is.
+
+4. Could they use it to store new values? How?
+	Other rulesets would need to raise an event in order to store new values. Much like how events are raised in the wovyn_base.
