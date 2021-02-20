@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Lab 5 Temp Log</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <h1>Current Temperature</h1>
+            <div id="current_temperature"></div>
+        </div>
+        <div>
+            <h1>Recent Temperatures</h1>
+            <ul id="recent_temperature_list"></ul>
+        </div>
+        <div>
+            <h1>Temperature Violations</h1>
+            <ul id="threshold_violation_list"></ul>
+        </div>
+        <div>
+            <a href="profile.html">Profile Settings</a>
+        </div>
+
+    </body>
+    <script>
+        var pico_url = "http://localhost:3000/sky/cloud/ckku6oh3g001euovqfq6y284x/"
+        var current_temperature_div = document.getElementById("current_temperature")
+        var recent_temperature_list = document.getElementById("recent_temperature_list")
+        var threshold_violation_list = document.getElementById("threshold_violation_list")
+
+        fetch(pico_url + "temperature_store/temperatures")
+        .then(res => res.json())
+        .then(temperature_list => {
+            temperature_list.reverse()
+            let current = null
+            recent_temperature_list.innerHTML = ''
+            temperature_list.forEach(temp => {
+                if (current == null) {
+                    current = temp
+                }
+
+                recent_temperature_list.innerHTML += "<li>" + temp.temperature + " °F at " + temp.timestamp + "</li>"
+            });
+
+            current_temperature_div.innerHTML = current.temperature + " °F at " + current.timestamp
+        })
+
+        fetch(pico_url + "temperature_store/threshold_violations")
+        .then(res => res.json())
+        .then(violation_list => {
+            violation_list.reverse()
+            threshold_violation_list.innerHTML = ''
+            violation_list.forEach(temp => {
+                threshold_violation_list.innerHTML += "<li>" + temp.temperature + " °F at " + temp.timestamp + "</li>"
+            });
+        })
+    </script>
+</html>

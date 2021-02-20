@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Profile Info</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <form action="" onsubmit="return sendProfileData()" id="profile_form">
+            <h1>Name</h1>
+            <div id="sensor_name"></div>
+            <input type="text" id="name" name="name"><br>
+
+            <h1>Location</h1>
+            <div id="sensor_location"></div>
+            <input type="text" id="location" name="location"><br>
+            
+            <h1>Temperature Threshold</h1>
+            <div id="sensor_threshold"></div>
+            <input type="text" id="threshold" name="threshold"><br>
+            
+            <h1>Phone Number</h1>
+            <div id="sensor_phone_number"></div>
+            <input type="text" id="phone_number" name="phone_number"><br><br><br>
+            
+            <input type="submit" value="Submit">
+        </form>
+        <br><br>
+        <div>
+            <a href="index.html">Temperature Home</a>
+        </div>
+    </body>
+    <script>
+        var sensor_name = document.getElementById("sensor_name")
+        var sensor_location = document.getElementById("sensor_location")
+        var sensor_threshold = document.getElementById("sensor_threshold")
+        var sensor_phone_number = document.getElementById("sensor_phone_number")
+
+        fetch("http://localhost:3000/sky/cloud/ckku6oh3g001euovqfq6y284x/sensor_profile/profile_data")
+        .then(res => res.json())
+        .then(profile_data => {
+            sensor_name.innerHTML = profile_data.name
+            sensor_location.innerHTML = profile_data.location
+            sensor_threshold.innerHTML = profile_data.threshold
+            sensor_phone_number.innerHTML = profile_data.phone_number
+        })
+
+        function sendProfileData() {
+            let new_data = {
+                name: document.getElementById("name").value == ""?"some_name":document.getElementById("name").value,
+                location: document.getElementById("location").value == ""?"some_location":document.getElementById("location").value,
+                threshold: document.getElementById("threshold").value == ""?"65":document.getElementById("threshold").value,
+                phone_number: document.getElementById("phone_number").value == ""?"+16692654358":document.getElementById("phone_number").value
+            }
+
+            var stuff = $("#profile_form :input").serializeArray();
+            console.log(stuff)
+            console.log(new_data)
+
+            $.post("http://localhost:3000/sky/event/ckku6oh3g001euovqfq6y284x/sensor_profile/sensor/profile_updated", new_data, function(data) { console.log(data)})
+        }
+    </script>
+</html>
