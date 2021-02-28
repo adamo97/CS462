@@ -1,0 +1,27 @@
+Lab 6 Answers
+
+1. How did your rule that creates the sensor pico install rules in the new child pico?
+	I raised a wrangler event "new_child_request" to create the new sensor pico.  After
+	that I had a rule select when wrangler new_child_created that used a foreach call
+ 	on a map of needed_ruleset_rids.  The map took the rid as the key and the config as
+	the value so I was able to install whatever rulesets I wanted with the associated
+	configs by using event:send(...)
+
+2. How did you ensure that your sensor picos were created before sending them the event telling them their profile was updated?
+	Picos only process one event at a time (I learned from the docs).  I used this
+	knowledge to have a rule create them, then I raised another sensor event to update
+	the profile
+
+3. How did you create a test harness for your pico system?
+	I adapted the SPA from lab 5 to fetch the cids from the children picos
+	for the channels I programatically installed that had open allow statements.
+	With the cids I was able to use a for each loop to dynamically display the
+	information for each sensor.
+	I used the same method to adapt the profile page.
+
+4. In this set up, the picos representing sensors don't need to talk to each other and the sensor management pico is the parent,
+ so it has channels to each child. How could you provide channels between sensor picos if sensor-to-sensor interaction were necessary? 
+	Because each pico is connected to the parent, the parent has the information required to communicate
+	with any pico in the family.  The parent could notify the children of their family members.
+	This could allow the children to use the ecis to talk to each other directly.  This can be achieved using
+	the same function I used to query the children from the parent: ctx:query()
