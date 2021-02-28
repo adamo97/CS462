@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Lab 5 Temp Log</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <a href="profile.html">Profile Settings</a>
+        </div>
+    </body>
+    <script>
+        var sensor_collection_url = "http://localhost:3000/sky/cloud/cklo3pzwp003xikvqea4r0taa/"
+        children_eci_list =
+            fetch(sensor_collection_url + "manage_sensors/getAllOpenChannelIds")
+            .then(res => res.json())
+            .then(eci_list => {
+                eci_list.reverse()
+                eci_list.forEach(eci => {
+                   for_each_sensor(eci)
+                });
+            })
+
+        function for_each_sensor(eci) {
+            var pico_url = "http://localhost:3000/sky/cloud/" + eci + "/"
+
+            var current_temperature_div = document.createElement('div')
+            var recent_temperature_list = document.createElement('ul')
+            var threshold_violation_list = document.createElement('ul')
+
+            fetch("http://localhost:3000/sky/cloud/" + eci + "/sensor_profile/profile_data")
+            .then(res => res.json())
+            .then(profile_data => {
+                var sensor_name = profile_data.name
+                fetch(pico_url + "temperature_store/temperatures")
+                .then(res => res.json())
+                .then(temperature_list => {
+                    temperature_list.reverse()
+                    let current = null
+                    recent_temperature_list.innerHTML = ''
+                    temperature_list.forEach(temp => {
+                        if (current == null) {
+                            current = temp
+                        }
+
+                        recent_temperature_list.innerHTML += "<li>" + temp.temperature + " °F at " + temp.timestamp + "</li>"
+                    });
+
+                    current_temperature_div.innerHTML = current.temperature + " °F at " + current.timestamp
+                })
+
+                fetch(pico_url + "temperature_store/threshold_violations")
+                .then(res => res.json())
+                .then(violation_list => {
+                    violation_list.reverse()
+                    threshold_violation_list.innerHTML = ''
+                    violation_list.forEach(temp => {
+                        threshold_violation_list.innerHTML += "<li>" + temp.temperature + " °F at " + temp.timestamp + "</li>"
+                    });
+                })
+
+                var body = document.getElementsByTagName('body')[0]
+
+                var current_temperature_header = document.createElement('h1')
+                current_temperature_header.innerHTML = sensor_name + " Current Temperature"
+
+                var recent_temperature_header = document.createElement('h1')
+                recent_temperature_header.innerHTML = sensor_name + " Recent Temperatures"
+                
+                var threshold_violation_header = document.createElement('h1')
+                threshold_violation_header.innerHTML = sensor_name + " Temperature Violations"
+
+                body.appendChild(current_temperature_header)
+                body.appendChild(current_temperature_div)
+                body.appendChild(recent_temperature_header)
+                body.appendChild(recent_temperature_list)
+                body.appendChild(threshold_violation_header)
+                body.appendChild(threshold_violation_list)
+                body.appendChild(document.createElement('br'))
+                body.appendChild(document.createElement('br'))
+            })
+        }
+
+    </script>
+</html>

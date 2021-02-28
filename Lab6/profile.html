@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Profile Info</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <a href="index.html">Temperature Home</a>
+        </div>
+    </body>
+    <script>
+        var sensor_collection_url = "http://localhost:3000/sky/cloud/cklo3pzwp003xikvqea4r0taa/"
+        children_eci_list =
+            fetch(sensor_collection_url + "manage_sensors/getAllOpenChannelIds")
+            .then(res => res.json())
+            .then(eci_list => {
+                eci_list.reverse()
+                eci_list.forEach(eci => {
+                   for_each_sensor(eci)
+                });
+            })
+
+            function for_each_sensor(eci) {
+                var pico_url = "http://localhost:3000/sky/cloud/" + eci + "/"
+
+                var sensor_name = document.createElement('div')
+                var sensor_location = document.createElement('div')
+                var sensor_threshold = document.createElement('div')
+                var sensor_phone_number = document.createElement('div')
+
+                fetch(pico_url + "sensor_profile/profile_data")
+                .then(res => res.json())
+                .then(profile_data => {
+                    sensor_name.innerHTML = profile_data.name
+                    sensor_location.innerHTML = profile_data.location
+                    sensor_threshold.innerHTML = profile_data.threshold
+                    sensor_phone_number.innerHTML = profile_data.phone_number
+    
+                    var body = document.getElementsByTagName('body')[0]
+
+                    var name_header = document.createElement('h1')
+                    name_header.innerHTML = profile_data.name + " Name"
+
+                    var location_header = document.createElement('h1')
+                    location_header.innerHTML = profile_data.name + " Location"
+                    
+                    var temp_header = document.createElement('h1')
+                    temp_header.innerHTML = profile_data.name + " Temperature Threshold"
+
+                    var phone_header = document.createElement('h1')
+                    phone_header.innerHTML = profile_data.name + " Phone Number"
+
+                    var form = document.createElement('form')
+                    // form.onsubmit = getData()
+
+                    var name_input = document.createElement('input')
+                    name_input.type = "text"
+                    name_input.id = "name" + eci
+
+                    var location_input = document.createElement('input')
+                    location_input.type = "text"
+                    location_input.id = "location" + eci
+
+                    var temp_input = document.createElement('input')
+                    temp_input.type = "text"
+                    temp_input.id = "threshold" + eci
+
+                    var phone_input = document.createElement('input')
+                    phone_input.type = "text"
+                    phone_input.id = "phone_number" + eci
+
+                    var submit_button = document.createElement('input')
+                    submit_button.type = "submit"
+                    submit_button.value = "Submit"
+
+                    body.appendChild(form)
+                    form.appendChild(name_header)
+                    form.appendChild(sensor_name)
+                    form.appendChild(name_input)
+                    form.appendChild(location_header)
+                    form.appendChild(sensor_location)
+                    form.appendChild(location_input)
+                    form.appendChild(temp_header)
+                    form.appendChild(sensor_threshold)
+                    form.appendChild(temp_input)
+                    form.appendChild(phone_header)
+                    form.appendChild(sensor_phone_number)
+                    form.appendChild(phone_input)
+                    form.appendChild(document.createElement('br'))
+                    form.appendChild(document.createElement('br'))
+                    form.appendChild(submit_button)
+                    form.appendChild(document.createElement('br'))
+                    form.appendChild(document.createElement('br'))
+
+                    function getData() {
+                        let new_data = {
+                            name: name_input.value == ""?"some_name":name_input.value,
+                            location: location_input.value == ""?"some_location":location_input.value,
+                            threshold: temp_input.value == ""?"65":temp_input.value,
+                            phone_number: phone_input.value == ""?"+16692654358":phone_input.value
+                        }
+                        
+                        sendProfileData(new_data)
+                    }
+                    
+                })
+                
+                function sendProfileData(new_data) {
+                    
+                    console.log(new_data)
+
+                    $.post("http://localhost:3000/sky/event/" + eci + "/sensor_profile/sensor/profile_updated", new_data, function(data) { console.log(data)})
+                }
+            }
+    </script>
+</html>
