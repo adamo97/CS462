@@ -1,0 +1,24 @@
+Can a sensor be in more than one collection based on the code you wrote? Why or why not? What are the implications of a sensor being in more than one collection?
+
+Yes, a sensor can be in more than one collection.  Every time a report is requested a new correlation id is created and the responses belong to a new collection.
+The implication is that you have duplicate data (if the sensor doesn't have any new data).
+
+How could you ensure that only certain picos can raise an event that causes a temperature report to be generated?
+
+Only install the ruleset that has the rule that requests the report in the picos you want to raise the event.
+Other than that, the way the the rule is implemented it needs the Rx and Tx relations in order to send the events back and forth.
+
+How do the debug logs show that your scatter-gather system worked?
+
+When I call report:request I see a response from every sensor
+
+How can you know a report is done and all the sensors that are going to respond have reported? 
+
+Keep track of how many sensors there are total and keep a separate counter that tracks how many have responded with the given correlation id.
+
+Given your answer above, how would you recover if the number of responding sensors is less than the total number of sensors?
+
+If you want your system to continue to respond to events don't block while waiting for all sensors to respond.  Use a correlation id so that if/when
+the response does come back you know which request to put the data with.  If you wanted to you could also have a rule that would query the sensors that didnt respond
+if they took too long.  You could also simply notify some other system that a sensor isn't responding by comparing the total number of sensors that were requested and
+how many responded.
